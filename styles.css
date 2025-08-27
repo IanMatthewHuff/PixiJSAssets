@@ -1,0 +1,15 @@
+/* Add CSS styles for your web site here and use them in index.html. */
+body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+canvas {
+    display: block;
+    image-rendering: pixelated;
+}
