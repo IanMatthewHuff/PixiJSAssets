@@ -2,6 +2,7 @@ const GAME_WIDTH = 224;
 const GAME_HEIGHT = 288;
 const ASPECT_RATIO = GAME_WIDTH / GAME_HEIGHT;
 
+
 async function initGame() {
     const app = new PIXI.Application();
     
@@ -34,6 +35,11 @@ async function initGame() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
+    // Game settings
+    const shipSpeed = 3;
+    const enemySpeed = 2;
+    const enemySpawnRate = 0.02; // Chance to spawn enemy each frame (2%)
+
     // Set our base path for loading assets
     await PIXI.Assets.init({
         basePath: 'https://raw.githubusercontent.com/IanMatthewHuff/PixiJSAssets/refs/heads/main'
@@ -43,6 +49,10 @@ async function initGame() {
     // Load our ship sprite
     const texture = await PIXI.Assets.load("player-ship.png");
     const ship = new PIXI.Sprite(texture);
+    const enemyTexture = await PIXI.Assets.load("enemy-ship.png");
+
+    // Array to store enemy ships
+    const enemies = [];
 
     // Add to stage
     app.stage.addChild(ship);
@@ -53,6 +63,19 @@ async function initGame() {
     // Move the sprite to the center of the screen
     ship.x = app.screen.width / 2;
     ship.y = app.screen.height / 2;
+
+    // Function to spawn enemy ships
+    function spawnEnemy() {
+        const enemy = new PIXI.Sprite(enemyTexture);
+        enemy.anchor.set(0.5);
+        
+        // Random position across the top of the screen (integer values to avoid blurry sprites)
+        enemy.x = Math.floor(Math.random() * GAME_WIDTH);
+        enemy.y = -16; // Start just above the screen (half sprite height)
+        
+        app.stage.addChild(enemy);
+        enemies.push(enemy);
+    }
 
     // Handle keyboard input
     const keys = {};
@@ -65,6 +88,23 @@ async function initGame() {
 
     // Hook up our update function
     function update() {
+        // Randomly spawn enemy ships
+        if (Math.random() < enemySpawnRate && enemies.length < 10) {
+            spawnEnemy();
+        }
+
+        // Move enemy ships downward
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const enemy = enemies[i];
+            enemy.y += enemySpeed;
+            
+            // Remove enemies that have moved off the bottom of the screen
+            if (enemy.y > GAME_HEIGHT + 16) {
+                app.stage.removeChild(enemy);
+                enemies.splice(i, 1);
+            }
+        }
+
         // Check for arrow key presses and move the ship
         if (keys['ArrowLeft']) {
             ship.x -= shipSpeed;
